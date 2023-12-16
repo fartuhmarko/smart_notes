@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QApplication, QTextEdit, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QInputDialog
+from PyQt5.QtWidgets import QWidget, QApplication, QTextEdit, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QInputDialog,QMessageBox
 import json 
 app = QApplication([])
 
@@ -42,20 +42,37 @@ background-color: #75f505
 note_search.setStyleSheet('''
 background-color: #e105f5                          
     ''')
+line1.addWidget(text)
 line2.addWidget(notes_list)
 line2.addWidget(note_create)
-line2.addWidget(note_delete)
-line2.addWidget(note_save)
 
+
+h_line = QHBoxLayout()
+h_line.addWidget(note_save)
+h_line.addWidget(note_delete)
+line2.addLayout(h_line)
+
+h1_line = QHBoxLayout()
 line2.addWidget(tags_list)
 line2.addWidget(lineText)
-line2.addWidget(note_add)
-line2.addWidget(note_unpin)
+h1_line.addWidget(note_add)
+h1_line.addWidget(note_unpin)
 line2.addWidget(note_search)
+line2.addLayout(h1_line)
 
 
-line1.addWidget(text)
 notes = {}
+
+def save_note():
+    try:
+        note_text = text.toPlainText()
+        note_name = notes_list.currentItem().text()
+
+        notes[note_name]["text"] = note_text
+        writeFile()
+    except:
+        msg = QMessageBox(window, text="Виберіть замітку")
+        msg.show()
 
 def add_note():
     note_name, ok = QInputDialog.getText(window, "Нова замітка", "Назва нотатки")
@@ -120,9 +137,11 @@ note_search.clicked.connect(search_note_bytag)
 note_add.clicked.connect(add_tag)
 
 notes_list.itemClicked.connect(show_note)
-
-with open("notes.json", "r", encoding="utf-8") as file:
-    note = json.load(file)
+try:
+    with open("notes.json", "r", encoding="utf-8") as file:
+        notes = json.load(file)
+except:
+    print("File not found")
 
 note_create.clicked.connect(add_note)
 
